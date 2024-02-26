@@ -2,6 +2,7 @@ import {
   getNameDescriptionTableColumn,
   getStatusTableColumn,
   getTimeTableColumn,
+  getPublicScopeTableColumn,
 } from '@/utils/common/tableColumn'
 import {
   getTypeTableColumn,
@@ -23,6 +24,7 @@ export default {
       getTypeTableColumn(),
       getStatusTableColumn({ statusModule: 'k8s_repo' }),
       getUrlTableColumn(),
+      getPublicScopeTableColumn({ vm: this, resource: 'container_registries' }),
       getTimeTableColumn(),
     ]
   },

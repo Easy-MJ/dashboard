@@ -676,6 +676,7 @@ export const PERMISSION = {
   k8s_container_registries_create: ['k8s', 'container_registries', 'create'],
   k8s_container_registries_update: ['k8s', 'container_registries', 'update'],
   k8s_container_registries_delete: ['k8s', 'container_registries', 'delete'],
+  k8s_container_registries_public: ['k8s', 'container_registries', 'perform', 'public'],
   /**
    * 负责均衡 相关操作
    */

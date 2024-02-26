@@ -11,6 +11,9 @@
 
 <script>
 import {
+  getPublicScopeTableColumn,
+} from '@/utils/common/tableColumn'
+import {
   getUrlTableColumn,
 } from '../utils/columns'
 
@@ -30,6 +33,7 @@ export default {
     return {
       baseInfo: [
         getUrlTableColumn(),
+        getPublicScopeTableColumn({ vm: this, resource: 'container_registries' }),
       ],
     }
   },
