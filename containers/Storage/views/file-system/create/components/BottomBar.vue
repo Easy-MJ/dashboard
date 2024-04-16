@@ -53,7 +53,8 @@ export default {
           description: values.description,
           network_id: values.network,
           zone_id: values.zone_id,
-          project_domain: values.project_domain,
+          project_domain: (values.domain && values.domain.key) || this.userInfo.projectDomainId,
+          project_id: (values.project && values.project.key) || this.userInfo.projectId,
         }
         if (values.tag) {
           params.__meta__ = values.tag

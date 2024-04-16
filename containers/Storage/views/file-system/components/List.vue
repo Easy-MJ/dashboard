@@ -23,7 +23,7 @@ import {
   getTenantFilter,
   getDomainFilter,
   getDescriptionFilter,
-  getCreatedAtFilter
+  getCreatedAtFilter,
 } from '@/utils/common/tableFilter'
 import { disableDeleteAction } from '@/utils/common/tableActions'
 import WindowsMixin from '@/mixins/windows'
@@ -36,6 +36,7 @@ export default {
   mixins: [WindowsMixin, ListMixin, GlobalSearchMixin, ColumnsMixin, SingleActionsMixin],
   props: {
     id: String,
+    cloudEnv: String,
     getParams: {
       type: [Function, Object],
     },
@@ -112,6 +113,9 @@ export default {
           action: () => {
             this.$router.push({
               path: '/nas/create',
+              query: {
+                type: this.cloudEnv,
+              },
             })
           },
           meta: () => {
@@ -182,7 +186,7 @@ export default {
                   return {
                     validate: true,
                   }
-                }
+                },
               },
               disableDeleteAction(Object.assign(this, {
                 permission: 'file_systems_update',
@@ -221,6 +225,13 @@ export default {
       ],
     }
   },
+  watch: {
+    cloudEnv (val) {
+      this.$nextTick(() => {
+        this.list.fetchData(0)
+      })
+    },
+  },
   created () {
     this.initSidePageTab('file-system-detail')
     this.list.fetchData()
@@ -231,6 +242,7 @@ export default {
         ...(R.is(Function, this.getParams) ? this.getParams() : this.getParams),
         detail: true,
       }
+      if (this.cloudEnv) ret.cloud_env = this.cloudEnv
       return ret
     },
     handleOpenSidepage (row, tab) {

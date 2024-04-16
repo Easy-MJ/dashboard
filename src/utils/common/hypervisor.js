@@ -13,7 +13,8 @@ export class TypeClouds {
   providerMap = {}
   providerlowcaseMap = {}
   hosttypeMap = {}
-  constructor ({ ignore = [], env = ['idc', 'private', 'public'] } = {}) {
+  // eslint-disable-next-line
+  constructor({ ignore = [], env = ['idc', 'private', 'public'] } = {}) {
     this.ignore = ignore
     this.env = changeToArr(env)
     this.initMap()
@@ -120,6 +121,21 @@ export const getCloudEnvOptions = (capabilityBrandKey, ignoreAll) => {
     }
   }
   ret = ret.sort((a, b) => orderKeys.indexOf(a.key) - orderKeys.indexOf(b.key))
+  return ret
+}
+
+/**
+ * @description 根据实际的brand，计算出cloud env
+ * @param {String} capabilityBrandKey 传入capability中brand标识key
+ * @param {Boolean} ignoreAll 是否需要隐藏全部选项
+ * @param {Array} ignoreEnvKeys 需要隐藏的env key
+ * @returns {Array} 返回含有的cloudenv
+ */
+export const getCloudEnvOptions2 = (capabilityBrandKey, ignoreAll, ignoreEnvKeys = []) => {
+  const ret = getCloudEnvOptions(capabilityBrandKey, ignoreAll)
+  if (ignoreEnvKeys?.length) {
+    return ret.filter(v => !ignoreEnvKeys.includes(v.key))
+  }
   return ret
 }
 
