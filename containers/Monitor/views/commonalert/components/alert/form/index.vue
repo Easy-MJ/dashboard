@@ -1,5 +1,6 @@
 <template>
   <a-form v-bind="formItemLayout" :form="form.fc">
+    <container-title :title="$t('monitor.commonalert.base_info')" />
     <scope-radio :decorators="decorators" @change="scopeChange" :form="form" :disabled="disabled" :label="label" />
     <a-form-item :label="$t('common.name')">
       <a-input v-decorator="decorators.name" :placeholder="$t('common.placeholder')" :disabled="disabled" />
@@ -7,8 +8,8 @@
     <a-form-item :label="$t('common.description')">
       <a-textarea :auto-size="{ minRows: 1, maxRows: 3 }" v-decorator="decorators.description" :placeholder="$t('common_367')" />
     </a-form-item>
-    <a-form-item :label="$t('monitor.monitor_metric')" class="mb-0">
-      <metric
+    <a-form-item :label="$t('monitor.text_97')">
+      <!-- <metric
         :form="form"
         :decorators="decorators"
         :res_types="res_types"
@@ -17,22 +18,66 @@
         :loading="metricLoading"
         :showResType="showResType"
         @metricClear="resetMetric"
-        @metricChange="getMetricInfo" />
+        @metricChange="getMetricInfo" /> -->
+        <base-select
+          minWidth="192px"
+          v-decorator="decorators.metric_res_type"
+          :options="metricTypeOpts"
+          filterable
+          :disabled="disabled"
+          :select-props="{ placeholder: $t('monitor.text_111'), loading }" />
     </a-form-item>
     <a-form-item :label="$t('monitor.monitor_filters')">
-      <filters
-        :form="form"
-        ref="filtersRef"
-        :tags="tags"
-        :disabled="disabled"
-        :decorators="decorators.filters"
-        @remove="$nextTick(toParams)"
-        :loading="metricInfoLoading"
-        :metricInfo="metricInfo" />
+      <a-row>
+        <a-col>
+          <a-radio-group v-decorator="decorators.res_scope">
+            <a-radio-button value="all">{{$t('monitor.commonalert.res_scope.all')}}</a-radio-button>
+            <a-radio-button value="custom">{{$t('monitor.commonalert.res_scope.custom')}}</a-radio-button>
+          </a-radio-group>
+        </a-col>
+      </a-row>
+      <a-row class="mt-4" v-show="form.fd.res_scope === 'custom'">
+        <a-col>
+          <filters
+            :form="form"
+            ref="filtersRef"
+            :tags="tags"
+            :disabled="disabled"
+            :decorators="decorators.filters"
+            @remove="$nextTick(toParams)"
+            :loading="metricInfoLoading"
+            :metricInfo="metricInfo" />
+        </a-col>
+      </a-row>
+    </a-form-item>
+    <container-title :title="$t('monitor.commonalert.alarm_strategy')" />
+    <a-form-item :label="$t('monitor.commonalert.alert_condition')">
+      {{$t('monitor.commonalert.alert_condition.content')}}
+    </a-form-item>
+    <a-form-item :label="$t('monitor.commonalert.query_condition')" class="mb-0">
+      <a-row :gutter="2">
+        <a-col :span="6">
+          <a-form-item>
+            <base-select v-decorator="decorators.period" :options="preiodOpts" minWidth="90px" />
+          </a-form-item>
+        </a-col>
+        <a-col :span="6">
+          <a-form-item>
+            <base-select v-decorator="decorators.alert_duration" :options="durationOpts" minWidth="120px" />
+          </a-form-item>
+        </a-col>
+      </a-row>
     </a-form-item>
     <a-form-item :label="$t('monitor.condition')" class="mb-0">
-      <condition :decorators="decorators" :disabled="disabled" @comparatorChange="emitComparator"  @thresholdChange="emitThreshold" :unit="metricInfo.measurement === 'cloudaccount_balance' ? '' : conditionUnit" />
+      <condition
+        :decorators="decorators"
+        :disabled="disabled"
+        :res_type_measurements="res_type_measurements"
+        :unit="metricInfo.measurement === 'cloudaccount_balance' ? '' : conditionUnit"
+        @comparatorChange="emitComparator"
+        @thresholdChange="emitThreshold" />
     </a-form-item>
+    <container-title :title="$t('monitor.commonalert.alarm_notify')" />
     <a-form-item :label="$t('monitor.commonalerts.form.column.silent')" class="mb-0">
       <a-form-item class="mr-1">
         <base-select v-decorator="decorators.silent_period" :options="silentOpts" style="display: inline-flex;" />
@@ -117,10 +162,10 @@
 import * as R from 'ramda'
 import _ from 'lodash'
 import { mapGetters } from 'vuex'
-import Metric from '@Monitor/sections/Metric'
+// import Metric from '@Monitor/sections/Metric'
 import Filters from '@Monitor/sections/Filters'
 import ScopeRadio from '@/sections/ScopeRadio'
-import { levelMaps, metric_zh } from '@Monitor/constants'
+import { levelMaps, preiodMaps, metric_zh } from '@Monitor/constants'
 import { resolveValueChangeField } from '@/utils/common/ant'
 import NotifyTypes from '@/sections/NotifyTypes'
 import Condition from './Condition'
@@ -129,7 +174,7 @@ export default {
   name: 'CommonalertForm',
   components: {
     ScopeRadio,
-    Metric,
+    // Metric,
     Filters,
     Condition,
     NotifyTypes,
@@ -279,6 +324,12 @@ export default {
             rules: [
               { required: true, message: this.$t('common.select') },
             ],
+          },
+        ],
+        res_scope: [
+          'res_scope',
+          {
+            initialValue: 'all',
           },
         ],
         metric_key: [
@@ -464,6 +515,17 @@ export default {
       notifyTypes: initialValue.notifyTypes,
       label: this.$t('monitor.text00015'),
       isFirstMetricChange: this.isUpdate,
+      preiodOpts: Object.values(preiodMaps),
+      durationOpts: [
+        { key: 1, label: this.$t('monitor.duration.label', [1]) },
+        { key: 2, label: this.$t('monitor.duration.label', [2]) },
+        { key: 3, label: this.$t('monitor.duration.label', [3]) },
+        { key: 6, label: this.$t('monitor.duration.label', [6]) },
+        { key: 12, label: this.$t('monitor.duration.label', [12]) },
+        { key: 24, label: this.$t('monitor.duration.label', [24]) },
+        { key: 48, label: this.$t('monitor.duration.label', [48]) },
+        { key: 96, label: this.$t('monitor.duration.label', [96]) },
+      ],
     }
   },
   computed: {
@@ -485,6 +547,15 @@ export default {
         scope: this.currentScope,
         limit: 0,
       }
+    },
+    metricTypeOpts () {
+      return this.res_types.map(val => {
+        const label = this.$t(`dictionary.${val}`)
+        return {
+          key: val,
+          label,
+        }
+      })
     },
   },
   watch: {

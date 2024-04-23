@@ -1,13 +1,36 @@
 <template>
-  <a-row>
-    <a-col :span="6">
+  <a-row :gutter="2">
+    <a-col :span="4">
       <a-form-item>
-        <base-select v-decorator="decorators.period" :options="preiodOpts" minWidth="90px" />
+        <base-select
+          :options="conditionOpts"
+          :disabled="disabled"
+          :select-props="{ placeholder: $t('common.select') }" />
       </a-form-item>
     </a-col>
     <a-col :span="6">
       <a-form-item>
-        <base-select v-decorator="decorators.alert_duration" :options="durationOpts" minWidth="120px" />
+        <base-select
+          v-decorator="decorators.metric_key"
+          :options="metricKeyOpts"
+          filterable
+          :disabled="disabled"
+          :item.sync="metricKeyItem"
+          :select-props="{ placeholder: $t('monitor.text_112'), loading }"
+          @change="metricKeyChange" />
+      </a-form-item>
+    </a-col>
+    <a-col :span="6">
+      <a-form-item>
+        <base-select
+          filterable
+          v-decorator="decorators.metric_value"
+          :item.sync="metricValueItem"
+          :options="metricOpts"
+          :labelFormat="metricValueLabelFormat"
+          :disabled="disabled"
+          @change="metricValueChange"
+          :select-props="{ placeholder: $t('monitor.text_113'), allowClear: true, loading }" />
       </a-form-item>
     </a-col>
     <a-col :span="4">
@@ -15,12 +38,12 @@
         <base-select v-decorator="decorators.reduce" :options="reduceOpts" :disabled="disabled" minWidth="70px" />
       </a-form-item>
     </a-col>
-    <a-col :span="3">
+    <a-col :span="2">
       <a-form-item>
         <base-select v-decorator="decorators.comparator"  :options="comparatorOpts" minWidth="70px" :disabled="disabled" @change="onComparatorChange" />
       </a-form-item>
     </a-col>
-    <a-col :span="5" v-show="showThreshold">
+    <a-col :span="2" v-show="showThreshold">
       <a-form-item>
         <threshold-input v-decorator="decorators.threshold" :unit="unit" :disabled="disabled"  @change="thresholdChange" />
       </a-form-item>
@@ -30,8 +53,9 @@
 
 <script>
 import * as R from 'ramda'
+import _ from 'lodash'
+import { metric_zh } from '@Monitor/constants'
 import thresholdInput from './thresholdInput'
-import { preiodMaps } from '@Monitor/constants'
 
 export default {
   name: 'AlertCondition',
@@ -52,6 +76,17 @@ export default {
       type: String,
       default: '',
     },
+    res_type_measurements: {
+      type: Object,
+      default: () => ({}),
+    },
+    conditionOpts: {
+      type: Array,
+      default: () => [
+        { key: 'AND', label: 'AND' },
+        { key: 'OR', label: 'OR' },
+      ],
+    },
   },
   inject: ['form'],
   data () {
@@ -65,17 +100,6 @@ export default {
     }
 
     return {
-      preiodOpts: Object.values(preiodMaps),
-      durationOpts: [
-        { key: 1, label: this.$t('monitor.duration.label', [1]) },
-        { key: 2, label: this.$t('monitor.duration.label', [2]) },
-        { key: 3, label: this.$t('monitor.duration.label', [3]) },
-        { key: 6, label: this.$t('monitor.duration.label', [6]) },
-        { key: 12, label: this.$t('monitor.duration.label', [12]) },
-        { key: 24, label: this.$t('monitor.duration.label', [24]) },
-        { key: 48, label: this.$t('monitor.duration.label', [48]) },
-        { key: 96, label: this.$t('monitor.duration.label', [96]) },
-      ],
       reduceOpts: [
         { key: 'avg', label: this.$t('monitor.avg') },
         { key: 'min', label: this.$t('monitor.min') },
@@ -89,7 +113,56 @@ export default {
       ],
       threshold: { value: threshold, base: 1 },
       showThreshold: showThreshold,
+      metric_key: _.get(this.decorators.metric_key, '[1].initialValue'),
+      metricValueItem: {},
+      metricKeyItem: {},
     }
+  },
+  computed: {
+    metricKeyOpts () {
+      return (this.res_type_measurements[this.form.fd.metric_res_type] || []).map(val => {
+        let label = val.measurement
+        const displayName = val.measurement_display_name
+        if (displayName && metric_zh[displayName]) {
+          label = metric_zh[displayName]
+        }
+        return {
+          ...val,
+          metric_res_type: this.form.fd.metric_res_type,
+          key: val.measurement,
+          label,
+        }
+      })
+    },
+    metricOpts () {
+      const metricKeyItem = this.metricKeyOpts.find(item => item.key === this.metric_key)
+      if (metricKeyItem && _.isArray(metricKeyItem.field_key)) {
+        return metricKeyItem.field_key.map(val => {
+          let label = val
+          const fieldDes = metricKeyItem.field_descriptions
+          let description = {}
+          if (fieldDes) {
+            description = fieldDes[val]
+            const displayName = _.get(fieldDes, `${val}.display_name`)
+            if (displayName && metric_zh[displayName]) label = metric_zh[displayName]
+          }
+          return {
+            key: val,
+            label,
+            description,
+            metric_res_type: metricKeyItem.metric_res_type,
+          }
+        })
+      } else {
+        return []
+      }
+    },
+  },
+  mounted () {
+    this.$nextTick(() => {
+      const metricValue = this.form.fc.getFieldValue(this.decorators.metric_value[0])
+      if (metricValue) this.metricValueChange(metricValue)
+    })
   },
   methods: {
     thresholdChange (v) {
@@ -102,6 +175,41 @@ export default {
         this.showThreshold = true
       }
       this.$emit('comparatorChange', e)
+    },
+    metricValueLabelFormat (item) {
+      return (<div>
+        {item.label}<span class="text-black-50">({item.description.name})</span>
+      </div>)
+    },
+    metricKeyChange (val, isNative = true) {
+      this.metric_key = val
+      if (this.form && this.form.fc && isNative) {
+        this.form.fc.setFieldsValue({
+          [this.decorators.metric_value[0]]: undefined,
+        })
+      }
+    },
+    metricValueChange (val) {
+      if (!val) {
+        this.$emit('metricClear')
+      } else {
+        let vItem = this.metricValueItem
+        let kItem = this.metricKeyItem
+        if (!vItem) {
+          vItem = this.metricOpts.find((opt) => { return opt.key === val })
+        }
+        if (this.metricKeyItem) {
+          kItem = this.metricKeyOpts.find((opt) => { return opt.key === this.metric_key })
+        }
+        this.$emit('metricChange', { metricKey: this.metric_key, mertric: val, mertricItem: vItem, metricKeyItem: kItem })
+      }
+    },
+    resetMetric () {
+      this.form.fc.setFieldsValue({
+        [this.decorators.metric_key[0]]: undefined,
+        [this.decorators.metric_value[0]]: undefined,
+      })
+      this.$emit('metricClear')
     },
   },
 }

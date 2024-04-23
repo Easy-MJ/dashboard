@@ -1,6 +1,6 @@
 <template>
   <a-row v-loading="loading">
-    <a-col :md="{ span: 24 }" :lg="{ span: 22 }" :xl="{ span: 16 }" :xxl="{ span: 11 }" class="mb-5">
+    <a-col :md="{ span: 24 }" :lg="{ span: 22 }" :xl="{ span: 16 }" :xxl="{ span: 12 }" class="mb-5">
       <alert-form
         v-if="!isUpdate || (loaded && !loading)"
         ref="alertFormRef"
@@ -13,7 +13,8 @@
         @mertricItemChange="mertricItemChange"
         @scopeChange="scopeChange" />
     </a-col>
-    <a-col class="line mb-5" :md="{ span: 24 }" :lg="{ span: 22 }" :xl="{ span: 16 }" :xxl="{ span: 12, offset: 1 }">
+    <a-col class="line mb-5" :md="{ span: 24 }" :lg="{ span: 22 }" :xl="{ span: 16 }" :xxl="{ span: 11, offset: 1 }">
+      <container-title :title="$t('monitor.commonalert.monitor_info')" />
       <monitor-header
         class="mb-4"
         :timeOpts="timeOpts"
