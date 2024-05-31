@@ -3,7 +3,7 @@
     <div slot="header">{{action}}</div>
     <div slot="body">
       <dialog-selected-tips
-        :name="$t('dictionary.server')"
+        :name="params.name || $t('dictionary.server')"
         :count="params.data.length"
         :action="action" />
       <detect-ssh-table
@@ -23,10 +23,10 @@
 </template>
 
 <script>
-import SetupSshForm from '../create/form/SetupSSHForm'
-import { DetectSshTable } from './DetectSSH'
 import DialogMixin from '@/mixins/dialog'
 import WindowsMixin from '@/mixins/windows'
+import SetupSshForm from '../create/form/SetupSSHForm'
+import { DetectSshTable } from './DetectSSH'
 
 export default {
   name: 'InstallAgentDialog',

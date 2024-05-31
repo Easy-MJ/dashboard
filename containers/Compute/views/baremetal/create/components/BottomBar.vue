@@ -157,7 +157,7 @@ export default {
       return ret.join('、')
     },
     image () {
-      return this.fd.image.label
+      return this.fd.image?.label
     },
     tips () {
       const ret = [
@@ -211,7 +211,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-@import '../../../../../src/styles/less/theme';
+@import '~@/styles/less/theme';
 
 .create-server-result-wrap {
   position: relative;

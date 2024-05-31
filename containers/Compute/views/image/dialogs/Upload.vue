@@ -8,7 +8,7 @@
       <a-form
         v-bind="formItemLayout"
         :form="form.fc">
-        <a-form-item :label="$t('compute.text_297', [$t('dictionary.project')])" class="mb-0" v-bind="formItemLayout">
+        <a-form-item :label="$t('compute.text_297', [$t('dictionary.project')])" v-bind="formItemLayout">
           <domain-project :fc="form.fc" :decorators="{ project: decorators.project, domain: decorators.domain }" />
         </a-form-item>
         <a-form-item :label="$t('compute.text_627')" v-bind="formItemLayout">
@@ -316,7 +316,7 @@ export default {
             return false
           }
           this.handleUpload(formData)
-            .then(() => {})
+            .then(() => { })
             .catch(() => {
               this.loading = false
               this.clearTimer()

@@ -17,7 +17,19 @@
 <script>
 import * as R from 'ramda'
 import { disableDeleteAction } from '@/utils/common/tableActions'
-import { getNameFilter, getTenantFilter, getStatusFilter, getOsTypeFilter, getDomainFilter, getRegionFilter, getDescriptionFilter, getCreatedAtFilter } from '@/utils/common/tableFilter'
+import {
+  getNameFilter,
+  getTenantFilter,
+  getStatusFilter,
+  getOsTypeFilter,
+  getDomainFilter,
+  getRegionFilter,
+  getDescriptionFilter,
+  getCreatedAtFilter,
+  getAccountFilter,
+  getCloudProviderFilter,
+  getBrandFilter,
+} from '@/utils/common/tableFilter'
 import WindowsMixin from '@/mixins/windows'
 import ListMixin from '@/mixins/list'
 import ResStatusFilterMixin from '@/mixins/resStatusFilterMixin'
@@ -68,6 +80,9 @@ export default {
         label: this.$t('res.machine'),
         hidden: () => this.$store.getters.isProjectMode,
       },
+      brand: getBrandFilter('compute_engine_brands'),
+      cloudaccount: getAccountFilter(),
+      manager: getCloudProviderFilter(),
       region: getRegionFilter(),
       zone: {
         label: this.$t('res.zone'),
@@ -99,7 +114,7 @@ export default {
             this.$router.push({
               path: '/baremetal/create',
               query: {
-                type: 'baremetal',
+                type: this.cloudEnv === 'onpremise' ? 'idc' : this.cloudEnv || 'idc',
               },
             })
           },
@@ -141,6 +156,7 @@ export default {
           permission: 'server_perform_stop',
           action: () => {
             this.createDialog('VmShutDownDialog', {
+              name: this.$t('compute.text_92'),
               data: this.list.selectedItems,
               columns: this.columns,
               onManager: this.onManager,
@@ -165,6 +181,7 @@ export default {
           permission: 'server_perform_restart',
           action: () => {
             this.createDialog('VmRestartDialog', {
+              name: this.$t('compute.text_92'),
               data: this.list.selectedItems,
               columns: this.columns,
               onManager: this.onManager,
@@ -185,6 +202,28 @@ export default {
           },
         },
         {
+          label: this.$t('compute.perform_sync_status'),
+          permission: 'server_perform_syncstatus',
+          action: () => {
+            this.onManager('batchPerformAction', {
+              steadyStatus: Object.values(expectStatus.server).flat(),
+              managerArgs: {
+                action: 'syncstatus',
+              },
+            })
+          },
+          meta: () => {
+            let ret = {
+              validate: true,
+              tooltip: null,
+            }
+            ret.validate = this.list.selectedItems.length > 0
+            if (!ret.validate) return ret
+            ret = this.$isValidateResourceLock(this.list.selectedItems)
+            return ret
+          },
+        },
+        {
           label: this.$t('compute.text_275'),
           actions: () => {
             return [
@@ -193,6 +232,7 @@ export default {
                 permission: 'server_perform_deploy',
                 action: () => {
                   this.createDialog('VmResetPasswordDialog', {
+                    name: this.$t('compute.text_92'),
                     data: this.list.selectedItems,
                     columns: this.columns,
                     onManager: this.onManager,
@@ -226,6 +266,7 @@ export default {
                 permission: 'server_perform_change_owner',
                 action: () => {
                   this.createDialog('ChangeOwenrDialog', {
+                    name: this.$t('compute.text_92'),
                     data: this.list.selectedItems,
                     columns: this.columns,
                     onManager: this.onManager,
@@ -247,22 +288,11 @@ export default {
                 },
               },
               {
-                label: this.$t('compute.perform_sync_status'),
-                permission: 'server_perform_syncstatus',
-                action: () => {
-                  this.onManager('batchPerformAction', {
-                    steadyStatus: Object.values(expectStatus.server).flat(),
-                    managerArgs: {
-                      action: 'syncstatus',
-                    },
-                  })
-                },
-              },
-              {
                 label: this.$t('compute.vminstance.monitor.install_agent'),
                 permission: 'server_perform_install_agent',
                 action: () => {
                   this.createDialog('InstallAgentDialog', {
+                    name: this.$t('compute.text_92'),
                     data: this.list.selectedItems,
                     columns: this.columns,
                     onManager: this.onManager,
@@ -288,6 +318,7 @@ export default {
                 permission: 'server_perform_set_user_metadata',
                 action: () => {
                   this.createDialog('SetTagDialog', {
+                    tipName: this.$t('compute.text_92'),
                     data: this.list.selectedItems,
                     columns: this.columns,
                     onManager: this.onManager,
@@ -298,12 +329,13 @@ export default {
                   })
                 },
               },
-              disableDeleteAction(Object.assign(this, { permission: 'server_update' })),
+              disableDeleteAction(Object.assign(this, { permission: 'server_update' }), { name: this.$t('compute.text_92') }),
               {
                 label: this.$t('compute.perform_delete'),
                 permission: 'server_delete',
                 action: () => {
                   this.createDialog('DeleteResDialog', {
+                    name: this.$t('compute.text_92'),
                     vm: this,
                     data: this.list.selectedItems,
                     columns: this.columns,

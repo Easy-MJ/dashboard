@@ -8,7 +8,7 @@
         </div>
       </a-alert>
       <template v-if="isShowColumns">
-        <dialog-selected-tips :name="$t('dictionary.server')" :count="params.data.length" :action="action" />
+        <dialog-selected-tips :name="params.name || $t('dictionary.server')" :count="params.data.length" :action="action" />
         <dialog-table :data="params.data" :columns="params.columns.slice(0, 3)" />
       </template>
       <a-form

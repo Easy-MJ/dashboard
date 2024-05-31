@@ -19,8 +19,9 @@
 </template>
 
 <script>
-import BaremetalList from './components/List'
+import { getCloudEnvOptions } from '@/utils/common/hypervisor'
 import ResStatisticsMixin from '@/mixins/resStatisticsMixin'
+import BaremetalList from './components/List'
 
 export default {
   name: 'BaremetalIndex',
@@ -31,12 +32,14 @@ export default {
   data () {
     return {
       listId: 'BaremetalList',
-      cloudEnvOptions: [
-        { key: '', label: this.$t('compute.text_4') },
-      ],
       cloudEnv: '',
       resStaticsResource: 'servers',
     }
+  },
+  computed: {
+    cloudEnvOptions: () => {
+      return getCloudEnvOptions('compute_engine_brands').filter(item => item.key !== 'public')
+    },
   },
 }
 </script>

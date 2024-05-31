@@ -41,8 +41,8 @@ export default {
           field: 'index',
           title: this.$t('compute.text_375'),
           width: 50,
-          formatter: (data) => {
-            return data.seq
+          formatter: ({ row }) => {
+            return row.index
           },
         },
         getCopyWithContentTableColumn({ field: 'network', title: this.$t('compute.text_384'), sortable: true }),
@@ -60,7 +60,7 @@ export default {
             header: ({ column }) => {
               return [
                 <a-tooltip title={this.$t('compute.text_388')}>
-                  <span class='mr-1'>{ column.title }</span>
+                  <span class='mr-1'>{column.title}</span>
                   <icon type="question" />
                 </a-tooltip>,
               ]

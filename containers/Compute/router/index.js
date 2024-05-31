@@ -138,7 +138,7 @@ export default {
               if (isScopedPolicyMenuHidden('sub_hidden_menus.baremetal')) {
                 return true
               }
-              return !hasSetupKey(['baremetal'])
+              return !hasSetupKey(['baremetal', 'cloudpods'])
             },
           },
           component: Layout,

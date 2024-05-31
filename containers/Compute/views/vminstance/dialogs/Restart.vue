@@ -7,7 +7,7 @@
           <div>{{$t('compute.text_1234')}}</div>
         </template>
       </a-alert>
-      <dialog-selected-tips :name="$t('dictionary.server')" :count="params.data.length" :action="action" />
+      <dialog-selected-tips :name="params.name || $t('dictionary.server')" :count="params.data.length" :action="action" />
       <vxe-grid class="mb-2" :data="params.data" :columns="columns" />
       <a-form :form="form.fc" hideRequiredMark>
         <a-form-item :label="$t('compute.text_1041')" v-bind="formItemLayout" v-if="isOpenWorkflow">

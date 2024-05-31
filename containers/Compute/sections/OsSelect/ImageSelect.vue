@@ -107,6 +107,9 @@ export default {
     hypervisor: {
       type: String,
     },
+    envType: {
+      type: String,
+    },
   },
   data () {
     return {
@@ -139,6 +142,12 @@ export default {
     },
     isPrivate () {
       return this.cloudType === 'private'
+    },
+    isBaremetal () {
+      return this.cloudType === 'baremetal'
+    },
+    isBaremetalPrivate () {
+      return this.isBaremetal && this.envType === 'private'
     },
     // 选择的镜像类型是否为公有云镜像
     isPublicImage () {
@@ -344,7 +353,7 @@ export default {
       }
     },
     async fetchImages () {
-      if (this.isPublicImage || this.isPrivateImage || this.isVMware) return // 阻止不必要的请求
+      if (this.isPublicImage || this.isPrivateImage || this.isVMware || this.isBaremetalPrivate) return // 阻止不必要的请求
       let params = {
         limit: 0,
         details: true,
@@ -435,7 +444,7 @@ export default {
     },
     async _fetchCacheimages () {
       if (R.isNil(this.cacheImageParams) || R.isEmpty(this.cacheImageParams)) return
-      if (!this.isPublicImage && !this.isPrivateImage && !this.isVMware) return // 阻止不必要的请求，仅这三种情况需要渲染的是cacheimage，而且现在没有[需要标出哪些已缓存]的功能了
+      if (!this.isPublicImage && !this.isPrivateImage && !this.isVMware && !this.isBaremetalPrivate) return // 阻止不必要的请求，仅这三种情况需要渲染的是cacheimage，而且现在没有[需要标出哪些已缓存]的功能了
       const params = {
         details: false,
         order_by: 'ref_count',
@@ -468,7 +477,11 @@ export default {
       try {
         const { data: { data = [] } } = await this.cachedimagesM.list({ params })
         this.loading = false
-        this.images.cacheimagesList = data
+        if (this.imageType === 'private') {
+          this.images.cacheimagesList = data.filter(v => v.info?.disk_format !== 'iso')
+        } else {
+          this.images.cacheimagesList = data
+        }
         this.getImagesInfo()
       } catch (error) {
         this.loading = false
@@ -530,7 +543,7 @@ export default {
       let images = this.images.list
       // 如果选择的是公有云镜像类型，则取cache image list
       // 其他类型再进行过滤一次
-      if (this.isPublicImage || this.isPrivateImage || this.isVMware) {
+      if (this.isPublicImage || this.isPrivateImage || this.isVMware || this.isBaremetalPrivate) {
         images = this.images.cacheimagesList
         if (this.osArch) {
           images = images.filter((image) => {

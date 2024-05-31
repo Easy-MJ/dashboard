@@ -14,6 +14,7 @@ import {
   getUserTagColumn,
   getExtTagColumn,
 } from '@/utils/common/detailColumn'
+import { hasPermission } from '@/utils/auth'
 import {
   getNameDescriptionTableColumn,
   getStatusTableColumn,
@@ -26,6 +27,7 @@ import {
 import PasswordFetcher from '@Compute/sections/PasswordFetcher'
 import expectStatus from '@/constants/expectStatus'
 import WindowsMixin from '@/mixins/windows'
+const R = require('ramda')
 
 export default {
   name: 'BaremetalDetail',
@@ -43,6 +45,7 @@ export default {
   },
   data () {
     return {
+      imageExist: false,
       baseInfo: [
         getStatusTableColumn({
           field: 'power_states',
@@ -150,11 +153,21 @@ export default {
               title: this.$t('compute.text_97'),
               hideField: true,
               message: this.diskInfos.image,
-              slotCallback: row => {
-                if (this.diskInfos.image) {
-                  return [<side-page-trigger onTrigger={() => this.handleOpenSystemImageDetail(this.diskInfos.imageId)}>{this.diskInfos.image}</side-page-trigger>]
-                }
-                return '-'
+              customEdit: hasPermission({ key: 'server_perform_rebuild_root' }) && this.data.status === 'ready',
+              customEditCallback: (row) => {
+                this.createDialog('VmRebuildRootDialog', {
+                  name: this.$t('compute.text_92'),
+                  data: [row],
+                  columns: this.columns,
+                  onManager: this.onManager,
+                })
+              },
+              slotCallback: () => {
+                if (!this.diskInfos.image || this.diskInfos.image === '-') return '-'
+                if (!this.imageExist) return this.diskInfos.image
+                return [
+                  <side-page-trigger permission='images_get' name='SystemImageSidePage' id={this.diskInfos.imageId} vm={this}>{this.diskInfos.image}</side-page-trigger>,
+                ]
               },
             }),
             getCopyWithContentTableColumn({
@@ -268,8 +281,24 @@ export default {
       ]
     },
   },
+  watch: {
+    diskInfos: {
+      handler: 'checkImage',
+      immediate: true,
+    },
+  },
   created () { },
   methods: {
+    checkImage () {
+      new this.$Manager('images', 'v1')
+        .list({ params: { id: this.diskInfos.imageId, scope: this.$store.getters.scope } })
+        .then(({ data }) => {
+          this.imageExist = !R.isEmpty(data.data)
+        })
+        .catch(() => {
+          this.imageExist = false
+        })
+    },
     _diskStringify (diskObj) {
       let str = ''
       // const storageArr = Object.values(ALL_STORAGE)

@@ -25,6 +25,7 @@
           :zone-params="zoneParams"
           :cloudregion-params="cloudregionParams"
           :decorator="decorators.cloudregionZone"
+          :cloudregion.sync="cloudregion"
           filterBrandResource="compute_engine" />
       </a-form-item>
       <a-form-item :label="$t('compute.text_15')" v-if="isHCSO || isHCS">
@@ -181,7 +182,7 @@ import _ from 'lodash'
 import * as R from 'ramda'
 import SecgroupConfig from '@Compute/sections/SecgroupConfig'
 import { resolveValueChangeField } from '@/utils/common/ant'
-import { HYPERVISORS_MAP } from '@/constants'
+import { HYPERVISORS_MAP, PROVIDER_MAP } from '@/constants'
 import { HOST_CPU_ARCHS } from '@/constants/compute'
 import { uuid } from '@/utils/utils'
 import mixin from './mixin'
@@ -192,6 +193,11 @@ export default {
     SecgroupConfig,
   },
   mixins: [mixin],
+  data () {
+    return {
+      cloudregion: {},
+    }
+  },
   computed: {
     isArm () {
       return this.form.fd.sku && this.form.fd.sku.cpu_arch === HOST_CPU_ARCHS.arm.capabilityKey
@@ -335,7 +341,11 @@ export default {
         ...this.scopeParams,
       }
       if (this.form.fd.hypervisor && this.form.fd.hypervisor) {
-        params.provider = HYPERVISORS_MAP[this.form.fd.hypervisor].provider
+        if (this.cloudregion.provider === PROVIDER_MAP.Cloudpods.key) {
+          params.provider = this.cloudregion.provider
+        } else {
+          params.provider = HYPERVISORS_MAP[this.form.fd.hypervisor].provider
+        }
       }
       return params
     },
@@ -411,9 +421,17 @@ export default {
           if (resource === 'cloudregions' && cloudregion.key && id !== cloudregion.key) {
             return
           }
+          let hypervisors = data.hypervisor_info[this.cloudregion.provider] || data.hypervisors
+          if (this.cloudregion.provider === PROVIDER_MAP.Cloudpods.key) {
+            hypervisors = hypervisors.filter(val => {
+              return ![HYPERVISORS_MAP.baremetal.key, HYPERVISORS_MAP.esxi.key].includes(val)
+            })
+          } else {
+            hypervisors = hypervisors.filter(val => val !== HYPERVISORS_MAP.baremetal.key)
+          }
           this.form.fi.capability = {
             ...data,
-            hypervisors: data.hypervisors.filter(val => val !== 'baremetal'),
+            hypervisors,
           }
           this.form.fc.getFieldDecorator('hypervisor', { preserve: true })
           this.form.fc.setFieldsValue({

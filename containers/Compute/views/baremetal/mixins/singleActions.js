@@ -166,7 +166,22 @@ export default {
           return [
             {
               label: i18n.t('compute.text_353'),
-              submenus: hostServerActions(this.onManager, obj, this, false),
+              submenus: [
+                {
+                  label: i18n.t('compute.perform_sync_status'),
+                  permission: 'server_perform_syncstatus',
+                  action: () => {
+                    this.onManager('performAction', {
+                      steadyStatus: Object.values(expectStatus.server).flat(),
+                      id: obj.id,
+                      managerArgs: {
+                        action: 'syncstatus',
+                      },
+                    })
+                  },
+                },
+                ...hostServerActions(this.onManager, obj, this, false),
+              ],
             },
             {
               label: i18n.t('compute.text_356'),
@@ -176,6 +191,7 @@ export default {
                   permission: 'server_perform_rebuild_root',
                   action: () => {
                     this.createDialog('VmRebuildRootDialog', {
+                      name: this.$t('compute.text_92'),
                       data: [obj],
                       columns: this.columns,
                       onManager: this.onManager,
@@ -203,23 +219,11 @@ export default {
                   },
                 },
                 {
-                  label: i18n.t('compute.perform_sync_status'),
-                  permission: 'server_perform_syncstatus',
-                  action: () => {
-                    this.onManager('performAction', {
-                      steadyStatus: Object.values(expectStatus.server).flat(),
-                      id: obj.id,
-                      managerArgs: {
-                        action: 'syncstatus',
-                      },
-                    })
-                  },
-                },
-                {
                   label: this.$t('compute.perform_change_owner', [this.$t('dictionary.project')]),
                   permission: 'server_perform_change_owner',
                   action: () => {
                     this.createDialog('ChangeOwenrDialog', {
+                      name: this.$t('compute.text_92'),
                       data: [obj],
                       columns: this.columns,
                       onManager: this.onManager,
@@ -241,6 +245,7 @@ export default {
                   permission: 'server_create',
                   action: () => {
                     this.createDialog('VmCloneDialog', {
+                      name: this.$t('compute.text_92'),
                       data: [obj],
                       columns: this.columns,
                       onManager: this.onManager,
@@ -270,6 +275,7 @@ export default {
                   permission: 'server_perform_deploy',
                   action: () => {
                     this.createDialog('VmResetPasswordDialog', {
+                      name: this.$t('compute.text_92'),
                       data: [obj],
                       columns: this.columns,
                       onManager: this.onManager,
@@ -301,6 +307,7 @@ export default {
                   permission: 'server_perform_deploy',
                   action: () => {
                     this.createDialog('VmBindKeypairDialog', {
+                      name: this.$t('compute.text_92'),
                       data: [obj],
                       columns: this.columns,
                       onManager: this.onManager,
@@ -337,6 +344,7 @@ export default {
                   permission: 'server_perform_deploy',
                   action: () => {
                     this.createDialog('VmUnbindKeypairDialog', {
+                      name: this.$t('compute.text_92'),
                       data: [obj],
                       columns: this.columns,
                       onManager: this.onManager,
@@ -378,6 +386,7 @@ export default {
                   permission: 'server_perform_insertiso',
                   action: () => {
                     this.createDialog('VmMountIsoDialog', {
+                      name: this.$t('compute.text_92'),
                       data: [obj],
                       columns: this.columns,
                       onManager: this.onManager,
@@ -395,6 +404,7 @@ export default {
                   permission: 'server_perform_ejectiso',
                   action: () => {
                     this.createDialog('VmUnmountIsoDialog', {
+                      name: this.$t('compute.text_92'),
                       data: [obj],
                       columns: this.columns,
                       onManager: this.onManager,
@@ -412,12 +422,13 @@ export default {
             {
               label: i18n.t('compute.perform_delete'),
               submenus: [
-                disableDeleteAction(this),
+                disableDeleteAction(this, { name: this.$t('compute.text_92') }),
                 {
                   label: i18n.t('compute.perform_delete'),
                   permission: 'server_delete',
                   action: () => {
                     this.createDialog('DeleteResDialog', {
+                      name: this.$t('compute.text_92'),
                       vm: this,
                       data: [obj],
                       columns: this.columns,

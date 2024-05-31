@@ -24,7 +24,8 @@
       :sys-disk-size="sysDiskSize"
       :form="form"
       :edit="edit"
-      :hypervisor="hypervisor" />
+      :hypervisor="hypervisor"
+      :envType="envType" />
   </div>
 </template>
 
@@ -103,6 +104,9 @@ export default {
       type: Boolean,
       default: false,
     },
+    envType: {
+      type: String,
+    },
   },
   data () {
     return {
@@ -141,7 +145,11 @@ export default {
       } else if (this.isPrivate) {
         ret.unshift(IMAGES_TYPE_MAP.private)
       } else if (this.isBaremetal) {
-        ret.push(IMAGES_TYPE_MAP.iso)
+        if (this.envType === 'private') {
+          ret.unshift(IMAGES_TYPE_MAP.private)
+        } else {
+          ret.push(IMAGES_TYPE_MAP.iso)
+        }
       }
       ret = ret.filter((item) => {
         return !this.ignoreOptions.includes(item.key)

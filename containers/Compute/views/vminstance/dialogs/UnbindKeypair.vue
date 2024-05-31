@@ -3,7 +3,7 @@
     <div slot="header">{{$t('compute.text_364')}}</div>
     <div slot="body">
       <a-alert class="mb-2" v-if="isOpenStack" :message="$t('compute.text_1267')" type="warning" />
-      <dialog-selected-tips :name="$t('dictionary.server')" :count="params.data.length" :action="$t('compute.text_364')" />
+      <dialog-selected-tips :name="params.name || $t('dictionary.server')" :count="params.data.length" :action="$t('compute.text_364')" />
       <dialog-table :data="params.data" :columns="params.columns.slice(0, 3)" />
       <a-form :form="form.fc" hideRequiredMark>
         <a-form-item :label="$t('compute.text_494')" v-bind="formItemLayout" :extra="$t('compute.text_1268')">

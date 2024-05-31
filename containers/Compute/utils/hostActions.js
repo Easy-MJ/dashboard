@@ -1,5 +1,5 @@
-import { commonUnabled } from '../views/vminstance/utils'
 import i18n from '@/locales'
+import { commonUnabled } from '../views/vminstance/utils'
 
 export function hostCommonActions (hostList) {
   return [
@@ -260,6 +260,7 @@ export function hostServerActions (manager, obj, objList, isHostServer) {
       permission: 'server_perform_stop',
       action: () => {
         objList.createDialog('VmShutDownDialog', {
+          name: i18n.t('compute.text_92'),
           data: [obj],
           columns: objList.columns,
           onManager: manager,
@@ -277,6 +278,7 @@ export function hostServerActions (manager, obj, objList, isHostServer) {
       permission: 'server_perform_restart',
       action: () => {
         objList.createDialog('VmRestartDialog', {
+          name: i18n.t('compute.text_92'),
           data: [obj],
           columns: objList.columns,
           onManager: manager,
