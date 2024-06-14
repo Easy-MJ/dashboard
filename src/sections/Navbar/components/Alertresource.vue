@@ -10,9 +10,6 @@
         <div v-if="res_total > 0">
           {{$t('common_719', [res_total])}}<a-button type="link" size="small" @click="routerRes">{{$t('common.view')}}</a-button>
         </div>
-        <div v-if="alert_total > 0">
-          {{$t('common_alert_tips', [alert_total])}}<a-button type="link" size="small" @click="routerAlert">{{$t('common.view')}}</a-button>
-        </div>
       </div>
       <div slot="message" v-else>
         {{$t('common_720')}}
@@ -29,19 +26,15 @@ export default {
       type: Number,
       default: 0,
     },
-    alert_total: {
-      type: Number,
-      default: 0,
-    },
   },
   data () {
     return {
-      visible: (this.res_total + this.alert_total) > 0,
+      visible: this.res_total > 0,
     }
   },
   computed: {
     total () {
-      return this.res_total + this.alert_total
+      return this.res_total
     },
   },
   watch: {
@@ -56,9 +49,6 @@ export default {
     },
     routerRes (e) {
       this.$router.push('/alertresource')
-    },
-    routerAlert (e) {
-      this.$router.push('/alertrecord')
     },
   },
 }
@@ -83,15 +73,15 @@ export default {
   // animation: glint 1.5s infinite; // !打开动画之后 Renderer CPU 会在13%～15%左右
 }
 .alertresource-error {
-  color: rgba(0,0,0,.65);
+  color: rgba(0, 0, 0, 0.65);
   width: max-content;
   position: absolute;
   top: 0;
-  right:40px;
+  right: 40px;
   z-index: 10;
   &::after {
     display: block;
-    content: "";
+    content: '';
     width: 8px;
     height: 8px;
     transform: translateX(-50%) rotate(45deg);
