@@ -19,9 +19,24 @@
             :zone-params="zoneParams"
             :cloudregion-params="cloudregionParams"
             :decorator="decorators.cloudregionZone"
+            :disabledRegion="true"
             filterBrandResource="compute_engine" />
         </a-form-item>
-        <a-form-item :label="$t('compute.text_104')" class="mb-0">
+        <a-form-item :label="$t('compute.network_mode')">
+          <a-radio-group v-decorator="decorators.network_mode">
+            <a-radio-button value="old">{{$t('compute.network_mode.old')}}<help-tooltip class="ml-1" :text="$t('compute.network_mode.old_tips')" /></a-radio-button>
+            <a-radio-button value="new">{{$t('compute.network_mode.new')}}</a-radio-button>
+          </a-radio-group>
+        </a-form-item>
+        <a-form-item v-show="!isNetworkModeNew" :label="$t('compute.network_check_result')">
+          <span v-if="checkNetworkResultSuccess" class="success">{{$t('compute.network_check_result.success')}}</span>
+          <span v-else class="error">
+            {{$t('compute.network_check_result.error')}}
+            <a-icon type="sync" class="mr-2 pointer" :spin="loading" @click="()=>{}" />
+            <help-link :href="href">{{$t('compute.network_check_result.new_create')}}</help-link>
+          </span>
+        </a-form-item>
+        <a-form-item v-show="isNetworkModeNew" :label="$t('compute.text_104')" class="mb-0">
           <server-network
             :form="form"
             :decorator="decorators.network"
@@ -177,101 +192,101 @@ export default {
           ],
           networkConfig: {
             vpcs: i => [
-          `vpcs[${i}]`,
-          {
-            validateTrigger: ['change', 'blur'],
-            rules: [{
-              required: true,
-              message: this.$t('compute.text_194'),
-            }],
-          },
+              `vpcs[${i}]`,
+              {
+                validateTrigger: ['change', 'blur'],
+                rules: [{
+                  required: true,
+                  message: this.$t('compute.text_194'),
+                }],
+              },
             ],
             networks: i => [
-          `networks[${i}]`,
-          {
-            validateTrigger: ['change', 'blur'],
-            rules: [{
-              required: true,
-              message: this.$t('compute.text_217'),
-            }],
-          },
+              `networks[${i}]`,
+              {
+                validateTrigger: ['change', 'blur'],
+                rules: [{
+                  required: true,
+                  message: this.$t('compute.text_217'),
+                }],
+              },
             ],
             ips: (i, networkData) => [
-          `networkIps[${i}]`,
-          {
-            validateFirst: true,
-            validateTrigger: ['blur', 'change'],
-            rules: [
+              `networkIps[${i}]`,
               {
-                required: true,
-                message: this.$t('compute.text_218'),
+                validateFirst: true,
+                validateTrigger: ['blur', 'change'],
+                rules: [
+                  {
+                    required: true,
+                    message: this.$t('compute.text_218'),
+                  },
+                  {
+                    validator: validateForm('IPv4'),
+                  },
+                  {
+                    validator: checkIpInSegment(i, networkData),
+                  },
+                ],
               },
-              {
-                validator: validateForm('IPv4'),
-              },
-              {
-                validator: checkIpInSegment(i, networkData),
-              },
-            ],
-          },
             ],
             macs: (i, networkData) => [
-          `networkMacs[${i}]`,
-          {
-            validateFirst: true,
-            validateTrigger: ['blur', 'change'],
-            rules: [
+              `networkMacs[${i}]`,
               {
-                required: true,
-                message: this.$t('compute.text_806'),
+                validateFirst: true,
+                validateTrigger: ['blur', 'change'],
+                rules: [
+                  {
+                    required: true,
+                    message: this.$t('compute.text_806'),
+                  },
+                  {
+                    validator: validateForm('mac'),
+                  },
+                ],
               },
-              {
-                validator: validateForm('mac'),
-              },
-            ],
-          },
             ],
             devices: i => [
-          `networkDevices[${i}]`,
-          {
-            validateTrigger: ['change', 'blur'],
-            rules: [{
-              required: true,
-              message: this.$t('compute.sriov_device_tips'),
-            }],
-          },
+              `networkDevices[${i}]`,
+              {
+                validateTrigger: ['change', 'blur'],
+                rules: [{
+                  required: true,
+                  message: this.$t('compute.sriov_device_tips'),
+                }],
+              },
             ],
           },
           networkSchedtag: {
             schedtags: i => [
-          `networkSchedtags[${i}]`,
-          {
-            validateTrigger: ['change', 'blur'],
-            rules: [{
-              required: true,
-              message: this.$t('compute.text_123'),
-            }],
-          },
+              `networkSchedtags[${i}]`,
+              {
+                validateTrigger: ['change', 'blur'],
+                rules: [{
+                  required: true,
+                  message: this.$t('compute.text_123'),
+                }],
+              },
             ],
             policys: (i, networkData) => [
-          `networkPolicys[${i}]`,
-          {
-            validateTrigger: ['blur', 'change'],
-            rules: [{
-              required: true,
-              message: this.$t('common_256'),
-            }],
-          },
+              `networkPolicys[${i}]`,
+              {
+                validateTrigger: ['blur', 'change'],
+                rules: [{
+                  required: true,
+                  message: this.$t('common_256'),
+                }],
+              },
             ],
             devices: i => [
-          `networkDevices[${i}]`,
-          {
-            validateTrigger: ['change', 'blur'],
-            rules: [{
-              required: true,
-              message: this.$t('compute.sriov_device_tips'),
-            }],
-          },
+              `networkDevices[${i}]`,
+              {
+                validateTrigger: ['change', 'blur'],
+                rules: [{
+                  required: true,
+                  message: this.$t('compute.sriov_device_tips'),
+                }],
+              },
             ],
           },
         },
@@ -292,27 +307,33 @@ export default {
           ],
           policySchedtag: {
             schedtags: i => [
-          `policySchedtagSchedtags[${i}]`,
-          {
-            validateTrigger: ['change', 'blur'],
-            rules: [{
-              required: true,
-              message: this.$t('compute.text_123'),
-            }],
-          },
+              `policySchedtagSchedtags[${i}]`,
+              {
+                validateTrigger: ['change', 'blur'],
+                rules: [{
+                  required: true,
+                  message: this.$t('compute.text_123'),
+                }],
+              },
             ],
             policys: (i, networkData) => [
-          `policySchedtagPolicys[${i}]`,
-          {
-            validateTrigger: ['blur', 'change'],
-            rules: [{
-              required: true,
-              message: this.$t('common_256'),
-            }],
-          },
+              `policySchedtagPolicys[${i}]`,
+              {
+                validateTrigger: ['blur', 'change'],
+                rules: [{
+                  required: true,
+                  message: this.$t('common_256'),
+                }],
+              },
             ],
           },
         },
+        network_mode: [
+          'network_mode',
+          {
+            initialValue: 'old',
+          },
+        ],
       },
       formItemLayout: {
         wrapperCol: {
@@ -322,6 +343,7 @@ export default {
           span: 4,
         },
       },
+      checkNetworkResultSuccess: false,
     }
   },
   computed: {
@@ -382,10 +404,16 @@ export default {
       return this.forcastData && this.hostsOptions?.length === 0
     },
     columns () {
-      const fields = ['name', 'status', 'host']
-      return this.params.columns.filter(item => {
+      const fields = ['name', 'status', 'host', 'ips', 'region', 'tenant']
+      const columnsMap = {}
+      this.params.columns.forEach(item => {
         const { field } = item
-        return fields.indexOf(field) > -1
+        if (fields.indexOf(field) > -1) {
+          columnsMap[field] = item
+        }
+      })
+      return fields.map(field => {
+        return columnsMap[field]
       })
     },
     networkParams () {
@@ -447,6 +475,13 @@ export default {
         order: 'asc',
         scope: this.scope,
       }
+    },
+    isNetworkModeNew () {
+      return this.form.fd.network_mode === 'new'
+    },
+    href () {
+      const url = this.$router.resolve('/network2')
+      return url.href
     },
   },
   watch: {
@@ -611,5 +646,14 @@ export default {
 <style lang="scss">
 .v2vtransfer-dialog .ant-col-20 {
   width: 83%;
+  .success {
+    color: #0cbd09;
+  }
+  .error {
+    color: #f00b0b;
+  }
+  .pointer {
+    cursor: pointer;
+  }
 }
 </style>
