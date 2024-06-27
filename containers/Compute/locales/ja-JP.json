@@ -1795,5 +1795,11 @@
   "compute.network_check_result.new_create": "新しいものを作成します",
   "compute.fill_ips_tooltip": "一部のリソースには IP 情報がありません。IP を入力して再試行してください。",
   "compute.fill_ip_tooltip": "このリソースには IP 情報がありません。IP を入力して再試行してください。",
-  "compute.v2v_transfer.host_tooltip": "プロンプト メッセージ: ホストが空の場合、システムは自動的にホストを選択します。"
+  "compute.v2v_transfer.host_tooltip": "プロンプト メッセージ: ホストが空の場合、システムは自動的にホストを選択します。",
+  "compute.rebuild_root.tip_1": "1. システムをインストールすると、新しいシステム ディスクが再割り当てされ、システム ディスク上の元のデータはすべて消去されます",
+  "compute.rebuild_root.tip_2": "2. システム イメージの再インストールは、クロスアーキテクチャをサポートしません。たとえば、x86 ホストは x86 アーキテクチャ イメージのみを選択できます。",
+  "compute.rebuild_root.tip_3": "3. Windows マシンにシステムを再インストールするには、Windows システムのみを選択できます。同じことが Linux マシンにも当てはまります",
+  "compute.rebuild_root.tip_4": "4. ホスト システムのディスク容量はミラーの最小ディスク要件を満たしている必要があります。満たさない場合は、対応するミラーを選択できません",
+  "compute.rebuild_root.tip_5": "5. システムの再インストールでは、ローカル ISO 形式のイメージの選択はサポートされません",
+  "compute.rebuild_root.tip_6": "6. ミラーのステータスが利用可能である必要があります"
 }

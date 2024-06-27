@@ -4,12 +4,12 @@
     <div slot="body">
       <a-alert class="mb-2" type="warning" v-if="tips">
         <div slot="message">
-          {{ tips }}
+          <p class="mt-1 mb-1" v-for="(tip, idx) in tips" :key="idx">{{ tip }}</p>
         </div>
       </a-alert>
       <template v-if="isShowColumns">
         <dialog-selected-tips :name="$t('dictionary.server')" :count="params.data.length" :action="action" />
-        <dialog-table :data="params.data" :columns="params.columns.slice(0, 3)" />
+        <dialog-table :data="params.data" :columns="columns" />
       </template>
       <a-form
         v-bind="formItemLayout"
@@ -65,7 +65,7 @@ import ServerPassword from '@Compute/sections/ServerPassword'
 import { SERVER_TYPE, LOGIN_TYPES_MAP } from '@Compute/constants'
 import DialogMixin from '@/mixins/dialog'
 import WindowsMixin from '@/mixins/windows'
-import { HYPERVISORS_MAP } from '@/constants'
+import { HYPERVISORS_MAP, BRAND_MAP } from '@/constants'
 import { Manager } from '@/utils/manager'
 import { IMAGES_TYPE_MAP, HOST_CPU_ARCHS } from '@/constants/compute'
 import { isRequired, passwordValidator } from '@/utils/validate'
@@ -124,9 +124,11 @@ export default {
     enableMFA () {
       return this.userInfo.enable_mfa && this.auth.auth.system_totp_on
     },
+    brand () {
+      return this.params.data[0].brand
+    },
     type () {
-      const brand = this.params.data[0].brand
-      return findPlatform(brand)
+      return findPlatform(this.brand)
     },
     osSelectTypes () {
       if (HYPERVISORS_MAP.ctyun.key === this.params.data[0].hypervisor) {
@@ -169,6 +171,9 @@ export default {
     },
     isZStack () {
       return this.hypervisor === HYPERVISORS_MAP.zstack.key
+    },
+    isKvm () {
+      return this.brand === BRAND_MAP.OneCloud.key
     },
     decorators () {
       const validateToImage = (isZStack) => {
@@ -300,16 +305,32 @@ export default {
       return false
     },
     tips () {
+      if (this.isKvm) {
+        return [
+          this.$t('compute.rebuild_root.tip_1'),
+          this.$t('compute.rebuild_root.tip_2'),
+          this.$t('compute.rebuild_root.tip_3'),
+          this.$t('compute.rebuild_root.tip_4'),
+          this.$t('compute.rebuild_root.tip_5'),
+          this.$t('compute.rebuild_root.tip_6'),
+        ]
+      }
       if (this.hypervisor === HYPERVISORS_MAP.openstack.key) {
-        return this.$t('compute.text_1222')
+        return [
+          this.$t('compute.text_1222'),
+        ]
       }
       if (this.hypervisor === HYPERVISORS_MAP.zstack.key) {
-        return this.$t('compute.text_1223')
+        return [
+          this.$t('compute.text_1223'),
+        ]
       }
       if (this.params.data.length === 1) {
-        return this.$t('compute.text_1224')
+        return [
+          this.$t('compute.text_1224'),
+        ]
       }
-      return ''
+      return []
     },
     osType () {
       return this.params.data[0].os_type
@@ -364,6 +385,26 @@ export default {
         return this.osArch !== HOST_CPU_ARCHS.arm.capabilityKey
       }
       return true
+    },
+    columns () {
+      const showColumns = ['name', 'instance_type']
+      const columns = this.params.columns.filter(item => showColumns.includes(item.field))
+      columns.splice(1, 0, {
+        field: 'image',
+        title: this.$t('compute.text_97'),
+        showOverflow: 'ellipsis',
+        minWidth: 100,
+        slots: {
+          default: ({ row }) => {
+            const diskInfos = row.disks_info
+            if (diskInfos?.length > 0) {
+              return diskInfos[0].image || '-'
+            }
+            return '-'
+          }
+        },
+      })
+      return columns
     },
   },
   // watch: {

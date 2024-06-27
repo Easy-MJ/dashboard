@@ -1793,5 +1793,11 @@
   "compute.network_check_result.new_create": "Go to create a new one",
   "compute.fill_ips_tooltip": "Some resources do not have IP information, please fill in the IP and try again",
   "compute.fill_ip_tooltip": "This resource does not have IP information, please fill in the IP and try again",
-  "compute.v2v_transfer.host_tooltip": "Prompt message: When the host is empty, the system will automatically select the host."
+  "compute.v2v_transfer.host_tooltip": "Prompt message: When the host is empty, the system will automatically select the host.",
+  "compute.rebuild_root.tip_1": "1. Installing the system will reallocate a new system disk, and all the original data on the system disk will be cleared",
+  "compute.rebuild_root.tip_2": "2. Reinstalling system images does not support cross-architecture. For example, x86 hosts can only select x86 architecture images",
+  "compute.rebuild_root.tip_3": "3. You can only choose the Windows system to reinstall the system on Windows machines. The same applies to Linux machines",
+  "compute.rebuild_root.tip_4": "4. The host system disk capacity must meet the minimum disk requirements of the mirror, otherwise the corresponding mirror cannot be selected",
+  "compute.rebuild_root.tip_5": "5. Reinstalling the system does not support selecting local ISO format images",
+  "compute.rebuild_root.tip_6": "6. The mirror status must be available"
 }
